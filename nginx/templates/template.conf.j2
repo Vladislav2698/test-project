@@ -1,0 +1,23 @@
+server {
+	listen {{ nginx_port }};
+	listen [::]:{{ nginx_port }};
+
+	server_name {{ ansible_hostname }}.com;
+	root /var/www/{{ ansible_hostname }}.com/{{ nginx_root }};
+
+	# index.html fallback
+	location / {
+		try_files $uri $uri/ /index.html;
+	}
+
+}
+
+# subdomains redirect
+server {
+	listen {{ nginx_port }};
+	listen [::]:{{ nginx_port }};
+
+	server_name *.{{ ansible_hostname }}.com;
+
+	return 301 http://{{ ansible_hostname }}.com$request_uri;
+}

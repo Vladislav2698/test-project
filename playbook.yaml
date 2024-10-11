@@ -1,2 +1,6 @@
 ---
 - name: Ansible Test Project
+  hosts:
+    - websrv
+  roles:
+    - nginx

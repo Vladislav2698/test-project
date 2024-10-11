@@ -1,0 +1,55 @@
+---
+- name: Install Nginx
+  apt:
+    update_cache: yes
+    name: nginx
+    state: present
+
+- name: Configuration Nginx
+  block:
+    - name: Create derectory
+      file:
+        path: /var/www/{{ ansible_hostname }}.com/{{ nginx_root }}
+        state: directory
+    
+    - name: Deploy index.html
+      template:
+        src: index.html.j2
+        dest: /var/www/{{ ansible_hostname }}.com/{{ nginx_root }}/index.html
+
+    - name: Copy configuration file
+      copy:
+        src: nginx.conf
+        dest: /etc/nginx/nginx.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Deploy config site
+      template:
+        src: template.conf.j2
+        dest: /etc/nginx/sites-available/{{ ansible_hostname }}.com
+        owner: root
+        group: root
+        mode: '0644'
+    
+    - name: Enable config site
+      file:
+        src: /etc/nginx/sites-available/{{ ansible_hostname }}.com
+        dest: /etc/nginx/sites-enabled/{{ ansible_hostname }}.com
+        state: link
+
+    - name: remove link default config
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+  
+  notify: restart nginx service
+ 
+- name: check config nginx 
+  command: "nginx -t" 
+  register: nginx_result
+
+- name: show config file 
+  debug:
+    var: nginx_result.stderr_lines
