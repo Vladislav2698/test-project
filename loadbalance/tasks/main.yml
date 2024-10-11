@@ -1,0 +1,34 @@
+---
+- name: Configuration Loadbalance
+  block:
+    - name: Deploy Loadbalance config
+      template:
+        src: template.conf.j2
+        dest: /etc/nginx/sites-available/loadbalance.conf
+        owner: root
+        group: root
+        mode: '0644'
+      vars:
+        webservers: "{{ groups['websrv']}}"
+
+    - name: Enable nginx balance config 
+      file:
+        src: /etc/nginx/sites-available/loadbalance.conf
+        dest: /etc/nginx/sites-enabled/loadbalance.conf
+        state: link
+
+    - name: Remove default Nginx config 
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: check config nginx 
+      command: "nginx -t" 
+      register: nginx_result
+
+    - name: show config file 
+      debug:
+        var: nginx_result.stderr_lines
+        
+  notify: restart service
+  when: "'balance' in group_names"

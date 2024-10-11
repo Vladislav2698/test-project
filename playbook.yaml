@@ -2,5 +2,8 @@
 - name: Ansible Test Project
   hosts:
     - websrv
+    - balance
   roles:
+    - installpackage
     - nginx
+    - loadbalance

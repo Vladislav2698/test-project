@@ -1,10 +1,4 @@
 ---
-- name: Install Nginx
-  apt:
-    update_cache: yes
-    name: nginx
-    state: present
-
 - name: Configuration Nginx
   block:
     - name: Create derectory
@@ -28,28 +22,30 @@
     - name: Deploy config site
       template:
         src: template.conf.j2
-        dest: /etc/nginx/sites-available/{{ ansible_hostname }}.com
+        dest: /etc/nginx/sites-available/{{ ansible_hostname }}.conf
         owner: root
         group: root
         mode: '0644'
     
     - name: Enable config site
       file:
-        src: /etc/nginx/sites-available/{{ ansible_hostname }}.com
-        dest: /etc/nginx/sites-enabled/{{ ansible_hostname }}.com
+        src: /etc/nginx/sites-available/{{ ansible_hostname }}.conf
+        dest: /etc/nginx/sites-enabled/{{ ansible_hostname }}.conf
         state: link
 
     - name: remove link default config
       file:
         path: /etc/nginx/sites-enabled/default
         state: absent
+
+    - name: check config nginx 
+      command: "nginx -t" 
+      register: nginx_result
+
+    - name: show config file 
+      debug:
+        var: nginx_result.stderr_lines
   
   notify: restart nginx service
+  when: "'websrv' in group_names"
  
-- name: check config nginx 
-  command: "nginx -t" 
-  register: nginx_result
-
-- name: show config file 
-  debug:
-    var: nginx_result.stderr_lines

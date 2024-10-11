@@ -1,0 +1,6 @@
+---
+- name: Install Nginx
+  apt:
+    update_cache: yes
+    name: nginx
+    state: present
